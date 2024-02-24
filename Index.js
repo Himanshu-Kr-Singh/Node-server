@@ -14,12 +14,30 @@ const sensorDataSchema = new mongoose.Schema({
 
 const SensorData = mongoose.model('SensorData', sensorDataSchema);
 
-app.post('/data', (req, res) => {
-  const data = new SensorData({ value: req.body.sensorData });
-  data.save(err => {
-    if (err) return res.send(500, { error: err });
-    return res.sendStatus(200);
+// app.post('/data', (req, res) => {
+//   const data = new SensorData({ value: req.body.sensorData });
+//   data.save(err => {
+//     if (err) return res.send(500, { error: err });
+//     return res.sendStatus(200);
+//   });
+// });
+app.post('/data', async (req, res) => {
+    try {
+        console.log(req.body);
+      const { sensorData } = req.body;
+      if (!sensorData) {
+        return res.status(400).json({ error: 'Sensor data is required' });
+      }
+  
+      const data = new SensorData({ value: sensorData });
+      await data.save();
+      
+      return res.sendStatus(200);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   });
-});
+
 
 app.listen(3000, () => console.log('Server started on port 3000'));
